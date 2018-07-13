@@ -1,0 +1,123 @@
+
+# coding: utf-8
+
+# In[1]:
+
+
+import numpy as np
+import pandas as pd
+import scipy.io as sio
+from sklearn import tree  
+from sklearn.metrics import precision_recall_curve  
+from sklearn.metrics import classification_report  
+from sklearn.cross_validation import train_test_split
+from sklearn.feature_extraction import DictVectorizer
+from sklearn import metrics
+from sklearn import svm
+
+
+
+# In[12]:
+
+
+f1 = open('陀螺仪数据集.csv',)
+df1 = pd.read_csv(f1)
+f1.close()
+
+
+# In[13]:
+
+
+y = np.array(df1.y_label)
+
+
+# In[14]:
+
+
+arr = np.array([df1.JX,df1.JY,df1.JZ,df1.TX,df1.TY,df1.TZ])
+
+
+# In[16]:
+
+
+x = arr.reshape(arr.shape[1],arr.shape[0])
+
+
+# In[18]:
+
+
+x.shape
+
+
+# In[19]:
+
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2)
+
+
+# In[20]:
+
+
+clf = svm.SVC(probability=True,)
+clf.fit(x_train,y_train)
+
+
+# In[21]:
+
+
+precision, recall, thresholds = precision_recall_curve(y_test, clf.predict(x_test))  
+
+
+# In[22]:
+
+
+print(classification_report(y_test, clf.predict(x_test), target_names = ['0', '1']))
+
+
+# In[23]:
+
+
+fpr, tpr, thresholds = metrics.roc_curve(y_test, clf.predict(x_test),pos_label=1)
+auc = metrics.auc(fpr,tpr)
+print('auc = ',auc)
+
+
+# In[24]:
+
+
+f2 = open('陀螺仪测试集.csv')
+df2 = pd.read_csv(f2)
+f2.close()
+
+
+# In[25]:
+
+
+y1 = np.array(df2.y_label)
+arr1 = np.array([df2.JX,df2.JY,df2.JZ,df2.TX,df2.TY,df2.TZ])
+x1 = arr1.reshape(arr1.shape[1],arr1.shape[0])
+
+
+# In[26]:
+
+
+probability = clf.predict_proba(x1)[:,1]
+
+
+# In[27]:
+
+
+df2['发生癫痫可能性'] = probability
+
+
+# In[28]:
+
+
+df3 = df2.drop('y_label',axis=1)
+
+
+# In[29]:
+
+
+print(df3)
+
