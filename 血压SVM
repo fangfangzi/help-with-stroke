@@ -1,0 +1,117 @@
+
+# coding: utf-8
+
+# In[1]:
+
+
+import numpy as np
+import pandas as pd
+import scipy.io as sio
+from sklearn import tree
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import classification_report
+from sklearn.cross_validation import train_test_split
+from sklearn.feature_extraction import DictVectorizer
+from sklearn import metrics
+from sklearn import svm
+#get_ipython().magic('matplotlib notebook')
+
+
+# In[23]:
+
+
+f1 = open('数据集合.csv',)
+df1 = pd.read_csv(f1)
+f1.close()
+
+
+# In[24]:
+
+
+y = np.array(df1.y_label)
+
+
+# In[25]:
+
+
+arr = np.array([df1.高压,df1.低压,df1.心率])
+
+
+# In[26]:
+
+
+x = arr.reshape(arr.shape[1],arr.shape[0])
+
+
+# In[27]:
+
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2)
+
+
+# In[28]:
+
+
+clf = svm.SVC(probability=True,)
+clf.fit(x_train,y_train)
+
+
+# In[29]:
+
+
+precision, recall, thresholds = precision_recall_curve(y_test, clf.predict(x_test))  
+
+
+# In[30]:
+
+
+print(classification_report(y_test, clf.predict(x_test), target_names = ['0', '1']))
+
+
+# In[31]:
+
+
+fpr, tpr, thresholds = metrics.roc_curve(y_test, clf.predict(x_test),pos_label=1)
+auc = metrics.auc(fpr,tpr)
+print('auc = ',auc)
+
+
+# In[32]:
+
+
+f2 = open('血压心率测试数据.csv')
+df2 = pd.read_csv(f2)
+f2.close()
+
+
+# In[33]:
+
+
+y1 = np.array(df2.y_label)
+arr1 = np.array([df2.高压,df2.低压,df2.心率])
+x1 = arr1.reshape(arr1.shape[1],arr1.shape[0])
+
+
+# In[34]:
+
+
+probability = clf.predict_proba(x1)[:,1]
+
+
+# In[35]:
+
+
+df2['发生癫痫可能性'] = probability
+
+
+# In[36]:
+
+
+df3 = df2.drop('y_label',axis=1)
+
+
+# In[37]:
+
+
+print(df3)
+
